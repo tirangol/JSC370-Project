@@ -2,7 +2,7 @@
 title: "JSC370 - Midterm Project"
 subtitle: "[Link to Github Repository](https://github.com/tirangol/JSC370-Project)"
 author: 'Richard Yin'
-date: '14 March 2025'
+date: '17 March 2025'
 output: 
   html_document: 
     theme: paper
