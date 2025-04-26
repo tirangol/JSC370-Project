@@ -1,0 +1,19 @@
+name: "JSC370"
+output_dir: "."
+navbar:
+  title: "Competitive Pokémon Analysis"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Data"
+      href: data.html
+  right:
+    - text: "JSC370"
+      href: https://jsc370.github.io/JSC370-2025/
+    - icon: fa-file-pdf-o fa-lg
+      href: https://github.com/tirangol/JSC370-Project
+    - icon: fa-github fa-lg
+      href: https://github.com/tirangol/JSC370-Project
+output:
+  html_document:
+    theme: journal

@@ -1,0 +1,47 @@
+---
+title: "An Analysis of Competitive Pokémon Usage on Pokémon Showdown"
+author: 'Richard Yin'
+date: '30 April 2025'
+output: 
+  html_document: 
+    theme: journal
+---
+
+Pokémon (or Pokemon) is a role-playing video game series wherein player characters travel across a fictional region, capturing and training teams of creatures called Pokemon to use in battles against other Pokemon and Pokemon trainers to accomplish various objectives. Central to its gameplay is the turn-based battle system which has fostered a wide-reaching competitive scene with many formats, rules, and clauses.
+
+This project focuses on the common singles format, where two opposing trainers field 1-6 Pokemon, which each possess:
+
+- An ability
+- A level (which is usually set to the same for all players)
+- An optional held item
+- 1-4 unique moves
+- 1-2 unique types (there are 18 total types, see Figure 1)
+- Base statistics for hit points (HP), attack, special attack, defence, special defence, and speed.
+
+As a battle begins, trainers send out a single Pokemon. Each turn, players can use a move from their current Pokemon or switch to a different Pokemon; they are unaware of their opponent's choice during this time. Once both sides have decided to act, events play out in the following order:
+
+1) Pokemon switches
+2) Moves with higher priority levels
+3) Moves by the Pokemon with the higher speed
+
+If a Pokemon loses all of its HP ("faints") at the end of a turn, its trainer sends out another Pokemon and the next turn begins; if no more Pokemon can stand, the trainer loses the battle.
+
+To win a battle, it is important for competitive players to build teams with a wide range of types and moves rather than simply those with the highest base statistics, because nuances in moves and Pokemon typing add significant complexity to the battle system:
+
+- Moves are labelled by types; they deal extra ("super effective") or reduced damage ("not very effective") based on the defending Pokemon's type(s), which is said to be "weak" to, "resist", or be "immune" to a type (see Figure 1 below).
+- Damaging moves are classified as "physical" or "special". Physical moves use the attacking Pokemon's attack against the defender's HP and defence to calculate damage, while special moves use special attack against HP and special defence.
+- Non-damaging moves have a variety of effects like:
+    - Temporarily changing a Pokemon's stats
+    - Healing
+    - Causing weather or status conditions (e.g. hail, rain, poison, burn) which affect Pokemon on the field
+    - Creating hazards (e.g. spikes, sticky web) that damage or weaken Pokemon upon switching in.
+
+<div style="text-align: center">
+![**Figure 1.** Pokemon type chart. Cell numbers (blank = 1) are damage multipliers for one type against another (e.g. the cell with row Fire and column Grass is 2, so Fire does x2 damage on Grass types). If a Pokemon has two types, the multipliers for both types are used (e.g. Fire does x2 damage on Grass types and Steel types, so it does x4 damage on Steel/Grass types). Source: [Wikipedia](https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Pokemon_Type_Chart.svg/2048px-Pokemon_Type_Chart.svg.png) ](https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Pokemon_Type_Chart.svg/2048px-Pokemon_Type_Chart.svg.png){width=50%}
+</div>
+
+<br>
+
+This project aims to answer the research question, **"What properties in a Pokemon most significantly influence its usage rate in competitive singles battles?"**. The focus of this analysis if Pokemon generation 7, the Alola region introduced by Pokemon Sun/Moon, because it has the largest pool of playable Pokemon.
+
+This study only considers Pokemon, base statistics, types, and moves, ignoring items and abilities. This is because items and abilities have wildly-differing effects, making it difficult to collapse into simpler categories; moreover, items are not unique to a Pokemon, while many abilities can uniquely identify individual Pokemon, which can result in overfitting..

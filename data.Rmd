@@ -1,0 +1,256 @@
+---
+title: "Visualizing Competitive Pokémon Usage"
+author: 'Richard Yin'
+date: '30 April 2025'
+output: 
+  html_document: 
+    theme: journal
+    toc: TRUE
+    toc_float: TRUE
+---
+
+Data in this study were collected largely from [Smogon University](https://www.smogon.com/) (or Smogon), a website specializing in competitive Pokemon resources. Smogon has forums, damage calculators, as well as a [Pokedex](https://www.smogon.com/dex/sm/pokemon/), a table of all Pokemon with base statistics, abilities, movesets, and community team-building strategies for each generation. Smogon also compiles [monthly statistical analyses](https://www.smogon.com/stats/) of Pokemon battles in the form of TXT files, which include raw counts of Pokemon usages as well as common abilities, items, and moves (data from January 2019 was used in this study). These battle statistics are sourced from [Pokémon Showdown!](https://pokemonshowdown.com/), a free Pokemon battle simulator that allows for building Pokemon teams, playing against random opponents online, and competing with a ranked Elo system. Pokemon evolution data were collected from [Veekun](https://veekun.com/dex/pokemon/search), an independently-created Pokedex website with a more complex search system.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+load('data/dataset.Rda')
+```
+
+## Stats {.tabset}
+
+### By Tier
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure A1.</b> Scatterplot of logged Pokemon usage by total base statistics of a Pokemon, coloured by tier. There is a positive correlation between tier level, base statistics, and logged usage (up until Pokemon in Ubers, which are slightly less-used than Pokemon in OU). There are vertical clusters of points with the same base statistics notably around 300, 570, 600, 680, and 720; some of this is caused by specific Pokemon who can be any type (i.e. Arceus, Silvally). There are four major ZU outliers with low base statistics and high usage: Wishiwashi, a Pokemon whose base statistics change based on an ability; Shedinja, which has an ability based on having an HP of 1 and immunities to most types; Smeargle, a gimmick-based Pokemon; and Ditto, which can transform into other Pokemon (which changes its base statistics)."}
+library(ggplot2)
+library(viridis)
+library(plotly)
+library(dplyr)
+
+dataset |>
+  mutate(formats = factor(formats, levels=c('LC', 'ZU', 'PU', 'NU', 'RU', 'UU', 'OU', 'Ubers'))) |>
+  plot_ly(x=~total, y=~usage, color=~formats,
+          colors=viridis(length(unique(dataset$formats)), option='turbo'),
+          type='scatter', mode='markers', text=~paste("<b>", name, "</b>",
+                                                      "<br><i>Usage:</i>", usage,
+                                                      "<br><i>Total Stats:</i>", total,
+                                                      "<br><i>Tier:</i>", formats),
+          hoverinfo='text') |>
+  layout(xaxis=list(title='Total Base Statistics'),
+         yaxis=list(title='Usage', type='log'),
+         title='Pokemon Usage by Total Base Statistics',
+         legend=list(title=list(text='Tier')))
+
+```
+
+### By Best Stat
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure A2.</b> Scatterplot of logged Pokemon usage by total base statistics of a Pokemon, coloured by best statistic type, which shows no clear correlation with total base statistic."}
+dataset |>
+  mutate(best_stat = case_when(best_stat == 'atk' ~ 'Attack',
+                               best_stat == 'phatk' ~ 'Physical Attack',
+                               best_stat == 'spatk' ~ 'Special Attack',
+                               best_stat == 'bulk' ~ 'Bulk',
+                               best_stat == 'phbulk' ~ 'Physical Bulk',
+                               best_stat == 'spbulk' ~ 'Special Bulk',
+                               best_stat == 'spe' ~ 'Speed',
+                               best_stat == 'none' ~ 'None'),
+         best_stat = factor(best_stat, levels=c("Attack", "Physical Attack", "Special Attack", "Bulk", "Physical Bulk", "Special Bulk", "Speed", "None"))) |>
+  plot_ly(x=~total, y=~usage, color=~best_stat,
+          colors=viridis(length(unique(dataset$formats)), option='turbo'),
+          type='scatter', mode='markers', text=~paste("<b>", name, "</b>",
+                                                      "<br><i>Usage:</i>", usage,
+                                                      "<br><i>Total Stats:</i>", total,
+                                                      "<br><i>Best Stat:</i>", best_stat),
+          hoverinfo='text') |>
+  layout(xaxis=list(title='Total Base Statistics'),
+         yaxis=list(title='Usage', type='log'),
+         title='Pokemon Usage by Total Base Statistics',
+         legend=list(title=list(text='Best Statistic Type')))
+```
+
+### By Evolution Stage
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure A3.</b> Scatterplot of logged Pokemon usage by total base statistics of a Pokemon, coloured by evolution stage. More-evolved Pokemon have greater base statistics, while non-evolving Pokemon have the highest base statistics, however non-evolved Pokemon seem to have comparable and more varied usage compared to final-stage Pokemon."}
+dataset |>
+  mutate(evolution = case_when(evolution == 'last' ~ 'Final Stage',
+                               evolution == 'first' ~ 'First Stage',
+                               evolution == 'middle' ~ 'Middle Stage',
+                               evolution == 'only' ~ 'Non-Evolving'),
+         evolution = factor(evolution, levels=c("First Stage", "Middle Stage", "Final Stage", "Non-Evolving"))) |>
+  plot_ly(x=~total, y=~usage, color=~evolution,
+          colors=c('First Stage' = '#44136C',
+                   'Middle Stage' = '#AF7812',
+                   'Final Stage' = '#FFD361',
+                   'Non-Evolving' = 'grey'),
+          type='scatter', mode='markers', text=~paste("<b>", name, "</b>",
+                                                      "<br><i>Usage:</i>", usage,
+                                                      "<br><i>Total Stats:</i>", total,
+                                                      "<br><i>Evolution:</i>", evolution),
+          hoverinfo='text') |>
+  layout(xaxis=list(title='Total Base Statistics'),
+         yaxis=list(title='Usage', type='log'),
+         title='Pokemon Usage by Total Base Statistics',
+         legend=list(title=list(text='Evolution')))
+```
+
+## Types {.tabset}
+
+### By Presence of a Type
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure B1.</b> Kernel density estimation of logged Pokemon usage by presence of a type in a Pokemon. Dragon, dark, steel, and fairy types are among the most commonly-used types, while bug and grass types are the least commonly-used."}
+library(tidyr)
+library(stringr)
+
+type_colours <- c(
+  Normal = '#A8A77A',
+  Fire = '#EE8130',
+  Water = '#6390F0',
+  Electric = '#F7D02C',
+  Ggrass = '#7AC74C',
+  Ice = '#96D9D6',
+  Fighting = '#C22E28',
+  Poison = '#A33EA1',
+  Ground = '#E2BF65',
+  Flying = '#A98FF3',
+  Psychic = '#F95587',
+  Bug = '#A6B91A',
+  Rock = '#B6A136',
+  Ghost = '#735797',
+  Dragon = '#6F35FC',
+  Dark = '#705746',
+  Steel = '#B7B7CE',
+  Fairy = '#D685AD'
+)
+
+p <- dataset |>
+  pivot_longer(cols=c('is_bug', 'is_dark', 'is_dragon', 'is_electric', 'is_fairy',
+                      'is_fighting', 'is_fire', 'is_flying', 'is_ghost', 'is_grass',
+                      'is_ground', 'is_ice', 'is_normal', 'is_poison', 'is_psychic',
+                      'is_rock', 'is_steel', 'is_water'),
+               names_to='type', values_to='value') |>
+  filter(value == TRUE) |>
+  mutate(type = unlist(lapply(type, function(x) str_to_title(str_split(x, '_')[[1]][2])))) |>
+  ggplot(aes(x=usage, color=type)) +
+    scale_x_log10() +
+    geom_density(kernel='epanechnikov', bw=0.2) +
+    scale_color_manual(values = type_colours) +
+    theme_light() +
+    labs(title='Densities of Pokemon Usage by Presence of a Type',
+         x='Usage', y='Density', color='Type')
+ggplotly(p)
+```
+
+### By Resistance to a Type
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure B2.</b> Kernel density estimation of logged Pokemon usage by resistance or immunity to a type in a Pokemon. Resistance to dragon types is clearly the most desirable quality; this agrees with steel and fairy being common types since both resist dragon types. Resistance to ground appears to be the least desirable for usage, likely because the least-used types (bug and grass) resist ground."}
+p <- dataset |>
+  pivot_longer(cols=c('def_bug', 'def_dark', 'def_dragon', 'def_electric', 'def_fairy',
+                      'def_fighting', 'def_fire', 'def_flying', 'def_ghost', 'def_grass',
+                      'def_ground', 'def_ice', 'def_normal', 'def_poison', 'def_psychic',
+                      'def_rock', 'def_steel', 'def_water'),
+               names_to='type', values_to='value') |>
+  filter(value == 0.5 | value == 0.25 | value == 0) |>
+  mutate(type = unlist(lapply(type, function(x) str_to_title(str_split(x, '_')[[1]][2])))) |>
+  ggplot(aes(x=usage, color=type)) +
+    scale_x_log10() +
+    geom_density(kernel='epanechnikov', bw=0.2) +
+    scale_color_manual(values = type_colours) +
+    theme_light() +
+    labs(title='Densities of Pokemon Usage by Resistance to a Type',
+         x='Usage', y='Density', color='Type')
+ggplotly(p)
+```
+
+### By Coverage of a Type
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure B3.</b> Kernel density estimation of logged Pokemon usage by whether the Pokemon has a super-effective move against a given type. There is no clear relationship, however it appears that coverage against water-types correlates to less usage, which could be connected to the fact that the least-used bug and grass types often have grass type moves. Coverage against an electric type (i.e. a ground-type move) appears to slightly correlate with higher usage."}
+p <- dataset |>
+  pivot_longer(cols=c('atk_bug', 'atk_dark', 'atk_dragon', 'atk_electric', 'atk_fairy',
+                      'atk_fighting', 'atk_fire', 'atk_flying', 'atk_ghost', 'atk_grass',
+                      'atk_ground', 'atk_ice', 'atk_normal', 'atk_poison', 'atk_psychic',
+                      'atk_rock', 'atk_steel', 'atk_water'),
+               names_to='type', values_to='value') |>
+  filter(value == 1) |>
+  mutate(type = unlist(lapply(type, function(x) str_to_title(str_split(x, '_')[[1]][2])))) |>
+  ggplot(aes(x=usage, color=type)) +
+    scale_x_log10() +
+    geom_density(kernel='epanechnikov', bw=0.2) +
+    scale_color_manual(values = type_colours) +
+    theme_light() +
+    labs(title='Densities of Pokemon Usage by Coverage of a Type',
+         x='Usage', y='Density', color='Type')
+ggplotly(p)
+```
+
+## Type Combinations {.tabset}
+
+### By Count
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure C1.</b> Heatmap of the number of unique Pokemon by type combination, where diagonals represent monotypes. Monotypes make up the majority of Pokemon in general and are the most common Pokemon of a given type except for steel and flying, where normal/flying and steel/psychic are more common than mono-flying and mono-steel types respectively. The five most common type combinations are normal, water, psychic, grass, and fire."}
+types <- c('Bug', 'Dark', 'Dragon', 'Electric', 'Fairy', 'Fighting', 'Fire',
+           'Flying', 'Ghost', 'Grass', 'Ground', 'Ice', 'Normal', 'Poison',
+           'Psychic', 'Rock', 'Steel', 'Water')
+type_num <- matrix(data=0, nrow=18, ncol=18)
+colnames(type_num) <- types
+rownames(type_num) <- types
+type_usage <- matrix(data=0, nrow=18, ncol=18)
+colnames(type_usage) <- types
+rownames(type_usage) <- types
+
+for (i in 1:nrow(dataset)) {
+  t <- strsplit(dataset[i,'types'], ',')[[1]]
+  if (length(t) == 1) {
+    type_num[t[1], t[1]] <- type_num[t[1], t[1]] + 1
+    type_usage[t[1], t[1]] <- type_usage[t[1], t[1]] + log(dataset[i,'usage'])
+  } else {
+    type_num[t[1], t[2]] <- type_num[t[1], t[2]] + 1
+    type_num[t[2], t[1]] <- type_num[t[2], t[1]] + 1
+    type_usage[t[1], t[2]] <- type_usage[t[1], t[2]] + log(dataset[i,'usage'])
+    type_usage[t[2], t[1]] <- type_usage[t[2], t[1]] + log(dataset[i,'usage'])
+  }
+}
+# type_num[lower.tri(type_num, diag=FALSE)] <- NA
+# type_usage[lower.tri(type_usage, diag=FALSE)] <- NA
+
+
+# Type Count
+m <- signif(type_usage / type_num, 4)
+hover_text <- expand.grid(t1 = types, t2 = types)
+hover_text$count <- as.vector(type_num)
+hover_text$usage <- as.vector(m)
+hover_text <- hover_text |>
+  mutate(hover = case_when(is.na(count) ~ '',
+                           !is.na(count) & t1 == t2 ~ paste("Type:", t1,
+                                                            "<br>Count:", count,
+                                                            "<br>Mean Logged Usage:", usage),
+                           count == 0 & t1 != t2 ~ paste("Type 1:", t1,
+                                                            "<br>Type 2:", t2,
+                                                            "<br>Count:", count),
+                           !is.na(count) & t1 != t2 ~ paste("Type 1:", t1,
+                                                            "<br>Type 2:", t2,
+                                                            "<br>Count:", count,
+                                                            "<br>Mean Logged Usage:", usage)))
+hover_text <- matrix(hover_text$hover, nrow=18)
+
+plot_ly(z=type_num, type='heatmap', text=hover_text, hoverinfo='text',
+        colors=viridis(256, option='inferno')) |>
+  layout(xaxis=list(scaleanchor='y', constrain='domain', showline=TRUE,
+                    tickvals=0:17, ticktext=types, zeroline=FALSE, tickangle=45),
+         yaxis=list(autorange='reversed', showline=TRUE,
+                    tickvals=0:17, ticktext=types, zeroline=FALSE),
+         legend=list(x=0, y=0, xanchor='left', yanchor='bottom'),
+         title=list(text='Unique Pokemon by Type'))
+```
+
+### By Usage
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure C2.</b> Heatmap of the mean logged usage of all Pokemon with the same type combination, where diagonals represent monotypes. Monotypes are less commonly-used than dual types."}
+# Type Usage
+plot_ly(z=m, type='heatmap', text=hover_text, hoverinfo='text',
+        colors=viridis(256, option='inferno')) |>
+  layout(xaxis=list(scaleanchor='y', constrain='domain', showline=TRUE, showgrid=FALSE,
+                    tickvals=0:17, ticktext=types, zeroline=FALSE, tickangle=45),
+         yaxis=list(autorange='reversed', showline=TRUE, showgrid=FALSE,
+                    tickvals=0:17, ticktext=types, zeroline=FALSE),
+         legend=list(x=0, y=0, xanchor='left', yanchor='bottom'),
+         title=list(text='Mean Logged Usage by Type'))
+```
