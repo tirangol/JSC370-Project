@@ -219,16 +219,16 @@ hover_text$count <- as.vector(type_num)
 hover_text$usage <- as.vector(m)
 hover_text <- hover_text |>
   mutate(hover = case_when(is.na(count) ~ '',
-                           !is.na(count) & t1 == t2 ~ paste("Type:", t1,
-                                                            "<br>Count:", count,
-                                                            "<br>Mean Logged Usage:", usage),
-                           count == 0 & t1 != t2 ~ paste("Type 1:", t1,
-                                                            "<br>Type 2:", t2,
-                                                            "<br>Count:", count),
-                           !is.na(count) & t1 != t2 ~ paste("Type 1:", t1,
-                                                            "<br>Type 2:", t2,
-                                                            "<br>Count:", count,
-                                                            "<br>Mean Logged Usage:", usage)))
+                           !is.na(count) & t1 == t2 ~ paste("<i>Type:</i>", t1,
+                                                            "<br><i>Count:</i>", count,
+                                                            "<br><i>Mean Logged Usage:</i>", usage),
+                           count == 0 & t1 != t2 ~ paste("<i>Type 1:</i>", t1,
+                                                            "<br><i>Type 2:</i>", t2,
+                                                            "<br><i>Count:</i>", count),
+                           !is.na(count) & t1 != t2 ~ paste("<i>Type 1:</i>", t1,
+                                                            "<br><i>Type 2:</i>", t2,
+                                                            "<br><i>Count:</i>", count,
+                                                            "<br><i>Mean Logged Usage:</i>", usage)))
 hover_text <- matrix(hover_text$hover, nrow=18)
 
 plot_ly(z=type_num, type='heatmap', text=hover_text, hoverinfo='text',

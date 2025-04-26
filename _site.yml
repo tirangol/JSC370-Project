@@ -1,7 +1,7 @@
 name: "JSC370"
 output_dir: "."
 navbar:
-  title: "Competitive Pokémon Analysis"
+  title: "Competitive PokC)mon Analysis"
   left:
     - text: "Home"
       href: index.html
@@ -11,7 +11,7 @@ navbar:
     - text: "JSC370"
       href: https://jsc370.github.io/JSC370-2025/
     - icon: fa-file-pdf-o fa-lg
-      href: https://github.com/tirangol/JSC370-Project
+      href: https://github.com/tirangol/JSC370-Project/blob/main/final.pdf
     - icon: fa-github fa-lg
       href: https://github.com/tirangol/JSC370-Project
 output:
