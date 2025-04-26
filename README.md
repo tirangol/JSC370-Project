@@ -4,4 +4,4 @@ This project is a statistical study of all Pokemon and their competitive usage n
 
 To reproduce the dataset, run the initial code chunks inside `final.Rmd`, which should generate a file called `dataset.Rda` which is used by the website and by later code in the same file.
 
-As the final assignment of JSC370, the website is available [here](www.google.com) and the final PDF report is available [here](www.google.com).
+As the final assignment of JSC370, the website is available [here](https://tirangol.github.io/JSC370-Project/index.html) and the final PDF report is available [here](https://github.com/tirangol/JSC370-Project/blob/main/final.pdf).
