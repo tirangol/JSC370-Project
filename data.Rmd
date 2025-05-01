@@ -96,7 +96,7 @@ dataset |>
 
 ### By Presence of a Type
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure B1.</b> Kernel density estimation of logged Pokemon usage by presence of a type in a Pokemon. Dragon, dark, steel, and fairy types are among the most commonly-used types, while bug and grass types are the least commonly-used."}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure B1.</b> Kernel density estimation of logged Pokemon usage by presence of a type in a Pokemon. Dragon, steel, and fairy types are among the most commonly-used types, while bug and grass types are the least commonly-used."}
 library(tidyr)
 library(stringr)
 
@@ -141,7 +141,7 @@ ggplotly(p)
 
 ### By Resistance to a Type
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure B2.</b> Kernel density estimation of logged Pokemon usage by resistance or immunity to a type in a Pokemon. Resistance to dragon types is clearly the most desirable quality; this agrees with steel and fairy being common types since both resist dragon types. Resistance to ground appears to be the least desirable for usage, likely because the least-used types (bug and grass) resist ground."}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure B2.</b> Kernel density estimation of logged Pokemon usage by resistance (x0.5, x0.25) or immunity (x0) to a type in a Pokemon. Resistance to dragon types is clearly the most desirable quality; this agrees with steel and fairy being common types since both resist dragon types. Resistance to ground appears to be the least desirable for usage, likely because the least-used types (bug and grass) resist ground."}
 p <- dataset |>
   pivot_longer(cols=c('def_bug', 'def_dark', 'def_dragon', 'def_electric', 'def_fairy',
                       'def_fighting', 'def_fire', 'def_flying', 'def_ghost', 'def_grass',
@@ -162,7 +162,7 @@ ggplotly(p)
 
 ### By Coverage of a Type
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure B3.</b> Kernel density estimation of logged Pokemon usage by whether the Pokemon has a super-effective move against a given type. There is no clear relationship, however it appears that coverage against water-types correlates to less usage, which could be connected to the fact that the least-used bug and grass types often have grass type moves. Coverage against an electric type (i.e. a ground-type move) appears to slightly correlate with higher usage."}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="<b>Figure B3.</b> Kernel density estimation of logged Pokemon usage by whether the Pokemon has a super-effective (x2) move against a given type. There is no clear relationship, however it appears that coverage against water-types correlates to less usage, which could be connected to the fact that the least-used bug and grass types often have grass type moves. Coverage against an electric type (i.e. a ground-type move) appears to slightly correlate with higher usage."}
 p <- dataset |>
   pivot_longer(cols=c('atk_bug', 'atk_dark', 'atk_dragon', 'atk_electric', 'atk_fairy',
                       'atk_fighting', 'atk_fire', 'atk_flying', 'atk_ghost', 'atk_grass',
