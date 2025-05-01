@@ -43,6 +43,6 @@ To win a battle, it is important for competitive players to build teams with a w
 
 <br>
 
-This project aims to answer the research question, **"What properties in a Pokemon most significantly influence its usage rate in competitive singles battles?"**. The focus of this analysis if Pokemon generation 7, the Alola region introduced by Pokemon Sun/Moon, because it has the largest pool of playable Pokemon.
+This project aims to answer the research question, **"What properties in a Pokemon most significantly influence its usage rate in competitive singles battles?"**. The focus of this analysis is Pokemon generation 7, the Alola region introduced by Pokemon Sun/Moon, because it has the largest pool of playable Pokemon.
 
 This study only considers Pokemon, base statistics, types, and moves, ignoring items and abilities. This is because items and abilities have wildly-differing effects, making it difficult to collapse into simpler categories; moreover, items are not unique to a Pokemon, while many abilities can uniquely identify individual Pokemon, which can result in overfitting.

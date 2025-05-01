@@ -1,4 +1,4 @@
-# An Analysis of Competitive PokC)mon Usage on PokC)mon Showdown
+# An Analysis of Competitive Pokemon Usage on Pokemon Showdown
 
 This project is a statistical study of all Pokemon and their competitive usage numbers on Pokemon Showdown, attempting to find the properties of a Pokemon that contribute most to its usage. Only the Pokemon's base statistics, typing, and common movesets are considered. Data from [Smogon](https://www.smogon.com/dex/sm/pokemon/) and [Veekun](https://veekun.com/dex/pokemon/search) is used to extract Pokemon and move information, while common moves and usage numbers are obtained from Smogon's [monhtly compiled analyses](https://www.smogon.com/stats/) of Pokemon Showdown! games (specifically, data from January 2019 was used).
 

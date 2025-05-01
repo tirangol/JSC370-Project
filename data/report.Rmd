@@ -472,7 +472,7 @@ There are many competitive formats to a Pokemon battle with various rules and cl
 
 As a battle begins, trainers send out a single Pokemon. Each turn, players can use a move from their current Pokemon or switch to a different Pokemon; they are unaware of their opponent's choice during this time. Once both sides have decided to act, events play out as such: switching occurs first, followed by moves with higher priority levels, then finally the Pokemon with higher speed acts first. If a Pokemon loses all of its HP ("faints") at the end of a turn, its trainer sends out another Pokemon and the next turn begins; if no more Pokemon can stand, the trainer loses the battle.
 
-To win a battle, it is important for competitive players to build teams with a wide range of types and moves rather than simply those with the highest base statistics, since nuances in moves and Pokemon typing add significant complexity to the battle system. For instance, moves are labelled by types and may deal extra ("super effective") or reduced damage based on the defending Pokemon's type(s) (see Figure 1 below). Moves are further classified as "physical" or "special". Moves have base power statistics which are amplified if the move type matches the user (called same-type attack bonus, or STAB). Physical moves use the attacking Pokemon's attack against the defender's HP and defence to calculate damage, while special moves use special attack against HP and special defence. Finally, non-damaging moves have a variety of effects like temporarily changing a Pokemon's stats, healing, causing weather or status conditions (e.g. hail, rain, poison, burn) which can affect Pokemon on the field, and creating hazards that damage or weaken Pokemon upon switching in.
+To win a battle, it is important for competitive players to build teams with a wide range of types and moves rather than simply those with the highest base statistics, since nuances in moves and Pokemon typing add significant complexity to the battle system. For instance, moves are labelled by types and may deal extra ("super effective") or reduced damage based on the defending Pokemon's type(s) (see Figure 1 below). Moves also have base power statistics which are amplified if the move type matches the user (called same-type attack bonus, or STAB). "Physical" moves use the attacking Pokemon's attack against the defender's HP and defence to calculate damage, while "special" moves use special attack against HP and special defence. Finally, non-damaging moves have a variety of effects like temporarily changing a Pokemon's stats, healing, causing weather or status conditions (e.g. hail, rain, poison, burn) which affect Pokemon on the field, and creating hazards that damage or weaken Pokemon upon switching in.
 
 ```{r, echo=FALSE, out.width="50%", fig.align='center'}
 knitr::include_graphics("Pokemon_Type_Chart.svg.png")
@@ -484,7 +484,7 @@ knitr::include_graphics("Pokemon_Type_Chart.svg.png")
 
 \vspace{3mm}
 
-With this in mind, this project aims to uncover insights regarding the effectiveness of Pokemon in a competitive setting by answering the research question, **"What properties in a Pokemon most significantly influence its usage rate in competitive singles battles?"** Generation 7, the Alola region introduced by Pokemon Sun/Moon, was selected as the main focus because it has the largest pool of playable Pokemon. Furthermore, this analysis only considers Pokemon, base statistics, types, and moves, ignoring items and abilities. This is because items and abilities have wildly-differing effects, making it difficult to collapse into simpler categories; moreover, items are not unique to a Pokemon, while many abilities can uniquely identify individual Pokemon, which can lead to an overfitted analysis.
+This project aims to uncover insights into the effectiveness of a Pokemon in a competitive setting by answering the research question, **"What properties in a Pokemon most significantly influence its usage rate in competitive singles battles?"** Generation 7, the Alola region introduced by Pokemon Sun/Moon, was selected as the study's main focus because it has the largest pool of playable Pokemon. Furthermore, this analysis only considers Pokemon, base statistics, types, and moves, ignoring items and abilities. This is because items and abilities have wildly-differing effects, making it difficult to collapse into simpler categories; moreover, items are not unique to a Pokemon, while many abilities can uniquely identify individual Pokemon, which can lead to an overfitted analysis.
 
 Data in this study were collected largely from [Smogon University](https://www.smogon.com/) (or Smogon), a website specializing in competitive Pokemon resources. Smogon has forums, damage calculators, as well as a [Pokedex](https://www.smogon.com/dex/sm/pokemon/), a table of all Pokemon with base statistics, abilities, movesets, and community team-building strategies for each generation. Smogon also compiles [monthly statistical analyses](https://www.smogon.com/stats/) of Pokemon battles in the form of TXT files, which include raw counts of Pokemon usages as well as common abilities, items, and moves (data from January 2019 was used in this study). These battle statistics are sourced from [Pokémon Showdown!](https://pokemonshowdown.com/), a free Pokemon battle simulator that allows for building Pokemon teams, playing against random opponents online, and competing with a ranked Elo system. Pokemon evolution data (explained later) were collected from [Veekun](https://veekun.com/dex/pokemon/search), an independently-created Pokedex website with a more complex search system.
 
@@ -500,15 +500,15 @@ To obtain generic Pokemon data including base statistics, move details, and type
 
 The displayed tabular data was dynamically injected from a Javascript object in a \texttt{<script>...</script>} tag and thus did not show up in the fetched HTML. Thus, the object was isolated and parsed into JSON, where it became clear the JSON contained a set of dataframes for Pokemon types and base statistics, moves, items, abilities, and offensive type matchups; only the first two dataframes were important for this study. Nonstandard Pokemon (i.e. fanmade Pokemon from Smogon's Create-A-Pokemon project) were filtered out, pokemon type was converted from a variable-length array to a string, then the type effectiveness dataframe was refitted into a matrix so both offensive and defensive matchups could be more easily indexed. Features were then extracted from the moves and Pokemon dataframes (see next section).
 
-It should be noted that some Pokemon abilities (e.g. [Levitate](https://www.smogon.com/dex/sm/abilities/levitate/), [Thick Fat](https://www.smogon.com/dex/sm/abilities/thick-fat/)) change the defensive type matchings, but these are not covered by this analysis because there also exists abilities which can nullify these effects (e.g. [Mold Breaker](https://www.smogon.com/dex/sm/abilities/mold-breaker/)) and the uncertainty around these extra defensive changes make it difficult to incorporate meaningfully into analysis.
+It should be noted that some Pokemon abilities (e.g. [Levitate](https://www.smogon.com/dex/sm/abilities/levitate/), [Thick Fat](https://www.smogon.com/dex/sm/abilities/thick-fat/)) change defensive type matchings, but these are not covered by this analysis because there also exists abilities which can nullify these effects (e.g. [Mold Breaker](https://www.smogon.com/dex/sm/abilities/mold-breaker/)) and the uncertainty around these changes make it difficult to incorporate meaningfully into analysis.
 
 ### Usage and Common Moves Data
 
-To acquire the response variable -- usage -- one of Smogon's monthly battle statistics were scraped. The usage number of a Pokemon in a TXT file is defined as a Pokemon's number of appearances across all matches in the TXT file's specified generation, tier, and month; teams with the same Pokemon or opposing teams with matching Pokemon can add to the count, potentially resulting in $>1$ Pokemon appearance per match. [Data from January 2019](https://www.smogon.com/stats/2019-01/moveset/) were selected in hopes of usage rates being relatively stable due to the time period being one of the last months before the next Pokemon generation.
+To acquire the response variable -- usage -- one of Smogon's monthly battle statistics were scraped. The usage number of a Pokemon in a TXT file is defined as a Pokemon's number of appearances across all matches in the TXT file's specified generation, tier, and month; teams with duplicate Pokemon or opposing teams with matching Pokemon can potentially result in $>1$ Pokemon appearance per match. [Data from January 2019](https://www.smogon.com/stats/2019-01/moveset/) were selected in hopes that being one of the last months before the next Pokemon generation, the usage rates would be relatively consistent.
 
-This analysis included the tiers Ubers, OU (overused), UU (underused), RU (rarely-used), NU (never-used), PU, ZU (zero-used), and LC (little cup), which are defined in descending order by Smogon (n.d.) based on usage rates and community adjudication; Pokemon from lower (i.e. worse) tiers may be used in higher tiers, but not vice versa. Tiers were incorporated to create a richer analysis, since without them the vast majority of Pokemon have no utility and thus would never be used at all.
+This analysis includes the tiers Ubers, OU (overused), UU (underused), RU (rarely-used), NU (never-used), PU, ZU (zero-used), and LC (little cup), which are defined in descending Pokemon strength by Smogon (n.d.) based on usage rates and community adjudication; Pokemon from lower (i.e. worse) tiers may be used in higher tiers, but not vice versa. Tiers were incorporated to create a richer analysis, since without them the vast majority of Pokemon have no utility and thus would never be used at all.
 
-After web scraping the TXT file, regex was used to extract the rows corresponding to names, raw counts, and most common moves (a variable-sized list). Moves representing "Nothing" (if $<4$ moves were chosen for the Pokemon) and "Other" were removed. For each Pokemon, its raw counts were summed across tiers, while the most common moves from the most-played tier were extracted. It was initially attempted to use the most common moves from the Pokemon's intended tier (specified by the Pokemon dataframe in Table 1), but some Pokemon had no usage for their specified tier, suggesting that the tier list changed since January 2019. This analysis focused on commonly-used moves instead of entire move pools because the former is more informative of a Pokemon's competitive strategy.
+After web scraping the TXT file, regex was used to extract the rows corresponding to names, raw counts, and most common moves (a variable-sized list). Moves representing "Nothing" (blank slots that appear if $<4$ moves were chosen for the Pokemon) and "Other" were removed. For each Pokemon, its raw counts were summed across tiers, while the most common moves from the most-played tier were extracted. It was initially attempted to use the most common moves from the Pokemon's intended tier (specified by the Pokemon dataframe in Table 1), but some Pokemon had no usage for their specified tier, suggesting that the tier list changed since January 2019. This analysis focuses on commonly-used moves instead of entire move pools because the former is more informative of a Pokemon's competitive strategy.
 
 ### Pokemon Evolutions
 
@@ -538,7 +538,7 @@ The moves dataframe was merged with the top 5 most common moves of each Pokemon;
 
 \vspace{-2mm}
 
-The Pokemon dataframe had 988 observations, which became 936 after merging. Three Pokemon genuinely saw zero usages -- Tranquill, Gothita, and Scatterbug -- so they were excluded from analysis due to a lack of common move data. Most missing Pokemon were either not introduced in the mainline Pokemon game (e.g. Melmetal, Eevee-Starter, Pikachu-Starter) or were a specific Pokemon form. Some forms were only cosmetic in nature (e.g. Pikachu-Hoenn, Pikachu-Unova), so they were removed, their usages added to the base form; others were related to abilities that change a Pokemon's form in the middle of a game (e.g. [Aegislash](https://www.smogon.com/dex/sm/pokemon/aegislash/), [Wishiwashi](https://www.smogon.com/dex/sm/pokemon/wishiwashi/)), which may affect some base statistics, resulting in extra rows created for this Pokemon's forms. This analysis did not consider these edge cases for the sake of simplicity.
+The Pokemon dataframe had 988 observations, which became 936 after merging. Three Pokemon genuinely saw zero usages -- Tranquill, Gothita, and Scatterbug -- so they were excluded from analysis due to a lack of common move data. Most removed Pokemon were either not introduced in the mainline Pokemon game (e.g. Melmetal, Eevee-Starter, Pikachu-Starter) or were a specific Pokemon form. Some forms were only cosmetic in nature (e.g. Pikachu-Hoenn, Pikachu-Unova), so they were merged into the base form; others forms were related to abilities that change a Pokemon's form in the middle of a game (e.g. [Aegislash](https://www.smogon.com/dex/sm/pokemon/aegislash/), [Wishiwashi](https://www.smogon.com/dex/sm/pokemon/wishiwashi/)), which can affect base statistics, resulting in extra rows created for this Pokemon's forms. This analysis did not consider these edge cases for the sake of simplicity.
 
 No outliers and implausible values were detected in this final dataset.
 
@@ -663,19 +663,19 @@ The models used for regression include:
 
 \vspace{-2mm}
 
-- *Linear Models (LMs)*: The fitting of a line to data that is assumed to follow $Y|X \sim \mathcal{N}(\mu, \sigma^2)$. This was performed on `log(usage)`, making it equivalent to a generalized linear model with a log-normal likelihood.
+- *Linear Models (LMs)*: The fitting of a line to data that is assumed to follow $Y|X \sim \mathcal{N}(\mu, \sigma^2)$. This response variable was `log(usage)`, equivalent to a generalized linear model with a log-normal distribution.
 
-- *Generalized Linear Models (GLMs)* (`MASS`): An extended form of a linear regression that allows $Y|X$ to follow any distribution. The quasi-poisson and negative binomial distributions are considered.
+- *Generalized Linear Models (GLMs)* (`MASS`): An extended form of linear regression that allows $Y|X$ to follow any distribution. The quasi-poisson and negative binomial distributions are considered.
 
-- *Generalized Additive Models (GAMs)* (`mgcv`): A GLM or LM with an additional non-linear smooth function for some coefficients that allow for fitting to non-linear trends.
+- *Generalized Additive Models (GAMs)* (`mgcv`): A GLM or LM with an additional non-linear smooth function for select coefficients to allow for fitting non-linear trends.
 
-- *Random Forests* (`randomForest`): The averaged predictions of many decision trees, a type of machine learning model that iteratively splits features based on thresholds into "purer", less varied subgroups to make predictions.
+- *Random Forests* (`randomForest`): The averaged predictions of many decision trees, a type of machine learning model that iteratively splits features based on threshold values into "purer", less varied subgroups in order to make predictions.
 
 - *XGBoost* (`caret`): A type of gradient boosting algorithm (which iteratively builds decision trees that correct the previous iteration's errors) that uses regularization and pruning to increase performance.
 
 \vspace{-2mm}
 
-The decision tree models were trained on the same 80%/20% train/test split. The random forest consisted of 50 trees, while XGBoost was trained on 100 rounds of max depth 3, with $\eta = \gamma = 0.5$ and 10-fold cross-validation. To compare the models, training and testing set, root mean squared error (RMSE) is used, defined as $\text{RMSE} = \sqrt{\frac{1}{n}\sum_{i = 1}^n(y_i - t_i)^2}$, where $y_i$ and $t_i$ are the model predictions and actual logged usages for Pokemon $i$.
+The decision tree models are trained on the same 80/20 train/test split. The random forest consisted of 50 trees, while XGBoost was trained on 100 rounds of max depth 3, with $\eta = \gamma = 0.5$ and 10-fold cross-validation. To compare the models across training and testing set, root mean squared error (RMSE) is used, defined as $\text{RMSE} = \sqrt{\frac{1}{n}\sum_{i = 1}^n(y_i - t_i)^2}$, where $y_i$ and $t_i$ are the model predictions and actual logged usages for Pokemon $i$.
 
 Plots are created of model coefficients and residuals as well as feature importance plots for the decision tree models. $p$-values are used to determine significance and decide the features to keep in the models.
 
@@ -696,7 +696,7 @@ dataset |>
             std = var ** 0.5)
 ```
 
-The distribution of usages is extremely right-skewed, with a mean of 37,946.39 far exceeding the median of 8,468, and a logarithmic-scale histogram of usages appearing vaguely symmetrical (Figure 2). Being an example of count data, it seems appropriate to model the counts as a Poisson distribution (where $\text{E}[X] = \text{Var}[X]$) or an overdispersed distribution (to account for extra variance) like the quasi-poisson or negative binomial. However, Figure 2's appearance is also vaguely normal, with very high counts and no zeroes, which may make the log-normal distribution a reasonable approximation.
+The distribution of usages is extremely right-skewed, with a mean of 37,986 far exceeding the median of 8511, and a logarithmic-scale histogram of usages appearing vaguely symmetrical (Figure 2). Being an example of count data, it seems appropriate to model the counts as a Poisson distribution (where $\text{E}[X] = \text{Var}[X]$) or an overdispersed distribution (to account for extra variance) like the quasi-poisson or negative binomial. However, the distribution is also vaguely normal, with very high counts and no zeroes, which may make the log-normal distribution a reasonable approximation.
 
 \vspace{-4mm}
 
@@ -733,7 +733,7 @@ p3 <- dataset |>
 
 \vspace{-5mm}
 
-**Figure 2**. Histogram of Pokemon usage in the dataset independently (left), by tier (middle), and by evolution stage (right). The distribution of Pokemon is extremely right-skewed, with Pokemon in higher tiers being more commonly used. Non-evolving or final-evolution Pokemon are used more than not fully evolved Pokemon.
+**Figure 2**. Histogram of Pokemon usage in the dataset independently (left), by tier (middle), and by evolution stage (right). The distribution of Pokemon is extremely right-skewed, with Pokemon in higher tiers being more commonly used. Non-evolving or final-evolution Pokemon are used more than not fully-evolved Pokemon.
 
 \begin{center}
 \textbf{Table 4}. Most and least commonly-used Pokemon in the dataset.
@@ -767,7 +767,7 @@ knitr::kable(x=rbind(p1, c('...', '...', '...', '...', '...', '...'), p2),
 
 \vspace{-2mm}
 
-Pokemon usage is also heavily dependent on tier and evolution: mid-to-high-level tiers like OU, UU, and RU being the most common tier by far and low-level tiers like LC and ZU being the least common; moreover, fully-evolved or non-evolving Pokemon are more popular than not fully-evolved Pokemon. Though a Pokemon's tier and evolution do not affect how it battles, the model may need to adjust for these confounders. This trend also manifests in Table 4, which lists the dataset's extremes. The top 5 most common Pokemon are all fully-evolved or non-evolving dual-types in OU with high totals, while the top 5 least common Pokemon are monotypes with low totals in LC. This trend is further visualized in Figure [A1](https://tirangol.github.io/JSC370-Project/data.html#by-tier)/[A3](https://tirangol.github.io/JSC370-Project/data.html#by-evolution-stage) in the report website, which show positive correlations between tier, evolution stage, total base statistics, and usage.
+Pokemon usage is also heavily dependent on tier and evolution: mid-to-high-level tiers like OU, UU, and RU are the most common tier by far and low-level tiers like LC and ZU are the least common, while fully-evolved or non-evolving Pokemon are more popular than not fully-evolved Pokemon. Though a Pokemon's tier and evolution does not affect how it battles, the model may need to adjust for these confounders. This trend also manifests in Table 4, which lists the dataset's extremes. The top 5 most common Pokemon are all fully-evolved or non-evolving dual-types in OU with high totals, while the top 5 least common Pokemon are monotypes with low totals in LC. This trend is further explored in Figure [A1](https://tirangol.github.io/JSC370-Project/data.html#by-tier)/[A3](https://tirangol.github.io/JSC370-Project/data.html#by-evolution-stage) in the report website, which show positive correlations between tier, evolution stage, total base statistics, and usage.
 
 ### Base Statistics
 
@@ -877,9 +877,9 @@ dataset |>
 
 ### Typing
 
-Figure 6 shows various 2D histograms and a box-whisker plot to assess the predictive power of shallow type-related features. It was hypothesized that Pokemon with less weaknesses, more resistances, and more super-effective coverage would be more useful competitively and thus used more often.
+Figure 6 shows various 2D histograms and a box-whisker plot to assess the predictive power of shallow type-related features. It is hypothesized that Pokemon with less weaknesses, more resistances, and more super-effective coverage would be more useful competitively and thus used more often. However, apart from the number of resistances, there is little to no correlation between usage and coverage, or usage and weakness count. Perhaps poor coverage is not problematic for defensive-based Pokemon and many weaknesses is not problematic for attack-based Pokemon. It may be necessary to combine `best_stat` with model weaknesses and coverage to properly model the hypothesized effect. 
 
-Apart from the number of resistances, there is little to no correlation between usage and coverage, or usage and weakness count. Perhaps poor coverage is not problematic for defensive-based Pokemon and many weaknesses is not problematic for attack-based Pokemon. It may be necessary to combine `best_stat` with model weaknesses and coverage to properly model the hypothesized effect. Finally, dual-types are more-used than monotypes, which is likely another byproduct of evolution as Pokemon commonly gain an additional type as they evolve.
+Finally, dual-types are more-used than monotypes, which is likely another byproduct of evolution as Pokemon commonly gain an additional type as they evolve.
 
 ```{r fig.align='center', echo=FALSE, message=TRUE, warning=FALSE, out.width='70%'}
 p1 <- dataset |>
@@ -955,7 +955,7 @@ cbind(a1, a2, a3)[1:(nrow(a1)-1),] |>
 
 \vspace{-2mm}
 
-Pokemon typing can be additionally be analyzed on a per-type level. Table 5 shows the results of three ANOVA tests performed on features for the presence of a type, defensive matchups against a type, and offensive coverage against a type, indicating to a 5% level,
+Pokemon typing can be additionally be analyzed on a per-type level. Table 5 shows the results of three ANOVA tests performed on features for the presence of a type, defensive matchups against a type, and offensive coverage against a type, indicating that to a 5% level,
 
 \vspace{-2mm}
 
@@ -965,7 +965,7 @@ Pokemon typing can be additionally be analyzed on a per-type level. Table 5 show
 
 \vspace{-2mm}
 
-At this level of granular detail, it is difficult to explain why specific type matchups affect usage more. Densities of logged usage are plotted in Figures [B1](https://tirangol.github.io/JSC370-Project/data.html#by-presence-of-a-type)/[B2](https://tirangol.github.io/JSC370-Project/data.html#by-resistance-to-a-type)/[B3](https://tirangol.github.io/JSC370-Project/data.html#by-coverage-of-a-type) to further examine type-level effects, where it appears that the presence of steel, fairy, and dragon types, resistance to dragon types, and coverage against electric types correlate with higher usage. To prevent overfitting to type combinations, many of which may uniquely identify a Pokemon (see Figure [C1](https://tirangol.github.io/JSC370-Project/data.html#by-count)) only one the three sets of variables is used.
+At this level of granular detail, it is difficult to explain why specific type matchups affect usage more. Densities of logged usage are plotted in Figures [B1](https://tirangol.github.io/JSC370-Project/data.html#by-presence-of-a-type)/[B2](https://tirangol.github.io/JSC370-Project/data.html#by-resistance-to-a-type)/[B3](https://tirangol.github.io/JSC370-Project/data.html#by-coverage-of-a-type) to further examine type-level effects, where it appears that the presence of steel, fairy, and dragon types, resistance to dragon types, and coverage against electric types correlate with higher usage. To prevent overfitting to type combinations, many of which may uniquely identify a Pokemon (see Figure [C1](https://tirangol.github.io/JSC370-Project/data.html#by-count)) only one the three sets of variables should be used.
 
 ### Move Details
 
@@ -1094,11 +1094,11 @@ plot_model_coefficients <- function(..., model_names=NULL, coef_names=NULL) {
 }
 ```
 
-Three linear models with different data distributions were tested -- log-normal, quasi-poisson, and negative binomial. Each model had a sample base model incorporating base statistics (totals, standard deviations, best base statistic type) and shallow type information (number of types, weaknesses, resistances, and offensive type matchups), with coefficients displayed in Figure 7. The quasi-poisson model and negative binomial model have additional dispersion parameters $\theta$ of 25154.58 (the estimated $\frac{\text{Var}[Y|X]}{\text{E}[Y|X]}$) and 1.055 (where $\frac{1}{\sqrt{\theta}} \approx 0.974$ is the relative excess standard deviation) respectively, providing strong evidence of overdispersion.
+Three linear models with different data distributions were tested -- log-normal, quasi-poisson, and negative binomial. Each model incorporated base statistics (totals, standard deviations, best base statistic type) and shallow type information (number of types, weaknesses, resistances, and offensive type matchups), with coefficients displayed in Figure 7. The quasi-poisson model and negative binomial model have additional dispersion parameters $\theta$ of 25171.35 (the estimated $\frac{\text{Var}[Y|X]}{\text{E}[Y|X]}$) and 1.056 (where $\frac{1}{\sqrt{\theta}} \approx 0.973$ is the relative excess standard deviation) respectively, providing strong evidence of overdispersion.
 
-All three models generally agree on the effect of each term. Adjusting for tier and evolution status, dual-types have a higher rate of usage ($\approx 1.2$ times) than monotypes. Compared to a general attack-based Pokemon, speed-based Pokemon now have the highest usage rates than other specializations, while well-rounded Pokemon have the lowest usage rates. Usage increases with less weaknesses and more resistances, as well as with increasing standard deviation and total total base statistics, showing that specialized Pokemon are more-used competitively.
+All three models generally agree on the effect of statistically significant terms. Adjusting for tier and evolution status, dual-types have a higher rate of usage ($\approx 1.2$ times) than monotypes. Speed-based Pokemon now have the highest usage rates, while well-rounded Pokemon have the lowest usage rates. Usage increases with less weaknesses and more resistances, as well as with increasing standard deviation and total total base statistics, showing that specialized Pokemon are more-used competitively.
 
-The negative binomial model is the most unusual model in terms of coefficints as it predicts the opposite effect for special bulk-based Pokemon term than the other models. It should be noted that the negative binomial model suffers from poor optimizer convergence, raising concerns over the validity of the results.
+It should also be noted that the negative binomial model suffers from poor optimizer convergence, raising concerns over the validity of the results.
 
 \vspace{-2mm}
 
@@ -1141,7 +1141,7 @@ m3$theta
 1 / sqrt(m3$theta)
 ```
 
-The residual plots in Figure 8 reveal that competitive tiers form the basis of model predictions. Pokemon are clustered by tier into diagonal lines, with small amounts of variance from the features of interest, whose effects are weak. The negative binomial's residuals do not appear unusual, suggesting the numerical instability issue was minor. Thus, in the absence of strong evidence for any model, the negative binomial appeared like the most conventional choice for Pokemon usage, a type of overdispersed count data.
+The residual plots in Figure 8 reveal that competitive tiers form the basis of model predictions. Pokemon are clustered by tier into diagonal lines, with small amounts of variance from the features of interest, whose effects are weak. The negative binomial's residuals do not appear unusual, suggesting the numerical instability issue was minor. Thus, in the absence of strong evidence for any model, the negative binomial was chosen as the most conventional option to model thisoverdispersed count data.
 
 \vspace{-5mm}
 
@@ -1176,7 +1176,7 @@ m7 <- gam(usage ~ evolution + formats + s(hp) + s(atk) + s(def) + s(spa) + s(spd
 
 \vspace{2mm}
 
-**Table 7**. Estimated multiplicative change to a Pokemon's rate of usage per 10-point increase in individual base statistic type, with $p$-values, after adjusting for evolution status and tier, for negative binomial GLMs using default base statistics (left) and using the bulk feature (right).
+**Table 7**. Estimated multiplicative change to a Pokemon's rate of usage per 10-point increase in individual base statistic type, with $p$-values, after adjusting for evolution status and tier, for two negative binomial GLMs with one using default base statistics (left) and the other using the bulk feature (right).
 
 \vspace{-2mm}
 
@@ -1207,7 +1207,16 @@ knitr::kable(cbind(t1, t2), row.names=FALSE, align='lrrlrr')
 
 \vspace{-2mm}
 
-Based on the nonlinear positive correlations observed in Figure 3, two GAM were constructed: a "shallow model" with smooth functions for the total (+ standard deviation), and a "deep model" with smooth functions for all six base statistics (+ standard deviation). From Figure 9, total statistics appears to behave like analyzed in Figure 3, while usage consistently increases with standard deviation. For the "deep model", most base statistics follow a monotonic relationship, while special defence and speed have an optimal region of usage around 80-100 and poorly-sampled variable regions below 30 and above 125. This suggests linear regression, as previously performed, is a bad match for the latter features since the highly-variable regions are also the most influential points to a linear model. The positive correlation for speed noticed in Table 7 also disappears, which is difficult to explain.
+Based on the nonlinear positive correlations observed in Figure 3, two GAMs (Figure 9) were constructed:
+
+\vspace{-2mm}
+
+- A "shallow model" with smooth functions for the total and standard deviation
+- A "deep model" with smooth functions for all six base statistics and standard deviation.
+
+\vspace{-2mm}
+
+For the shallow model, total statistics behave similarly to Figure 3, but usage consistently increases with standard deviation. For the deep model, attack and special attack correlate positively with usage, while defence and special defence have no clear correlation. HP appears to correlate negatively with usage, while speed appears to have an optimal region around 80-100, but no positive correlation as noticed in Table 7, which is difficult to explain.
 
 \vspace{-4mm}
 
@@ -1239,21 +1248,21 @@ grid()
 
 ### Types
 
-Three sets of boolean features are separately added to the deep GAM model to replace some shallower type features (# of weaknesses, resistances, and coverages): the presence of, super-effective coverage of, and resistance to a type. Note that one type was excluded as it was redundant information (since Pokemon must have at least one type) that created perfect multicollinearity.
+Three sets of type-level boolean features were separately added to the deep GAM model: the presence of, super-effective coverage of, and resistance to a type. Note that one type was excluded as it was redundant information (since Pokemon must have at least one type) that created perfect multicollinearity.
 
-Figure 10 shows that after adjusting for evolution status, tier, number of weaknesses and resistances, and base statistics, the presence of steel, ground, poison, fire, fighting, fairy, and dark types correlate positively to usage to a significant level, while the presence of bug types contributes negatively to usage. The trend is especially prominent for steel types, which is reasonable as it is the best defensive type (see Figure 1). Resistance to bug, flying, grass, and water (i.e. bug or grass types) negatively correlates with usage, albeit barely significantly ($p \approx 0.05$). Type coverage does not appear appear to correlate with usage apart from psychic type coverage, which has a marginal  negative effect. The results suggest that type presence is the most informative type information.
+Figure 10 shows that after adjusting for evolution status, tier, number of weaknesses and resistances, and base statistics, the presence of steel, ground, poison, fire, fighting, fairy, and dark types correlate positively with usage to a significant level, while the presence of bug types contributes negatively to usage. The trend is especially prominent for steel types, which is reasonable as it is the best defensive type (see Figure 1). Resistance to bug, flying, grass, and water (i.e. bug or grass types) negatively correlates with usage, albeit barely significantly ($p \approx 0.05$). Type coverage does not appear to correlate with usage apart from psychic type coverage, which has a marginalnegative effect. The results suggest that type presence is the most informative type information.
 
 \vspace{-2mm}
 
 ```{r include=FALSE}
 # Presence of type
-m8 <- gam(usage ~ evolution + formats + s(hp) + s(atk) + s(def) + s(spa) + s(spd) + s(spe) + typecount + s(stdev) + best_stat + is_fire + is_water + is_grass + is_electric + is_ice + is_fighting + is_poison + is_ground + is_flying + is_psychic + is_bug + is_rock + is_ghost + is_dragon + is_dark + is_steel + is_fairy, data=dataset, family=nb(link='log'), method='ML')
+m8 <- gam(usage ~ evolution + formats + s(hp) + s(atk) + s(def) + s(spa) + s(spd) + s(spe) + typecount + s(stdev) + best_stat + weaknesses + resistances + num_super_effective + is_fire + is_water + is_grass + is_electric + is_ice + is_fighting + is_poison + is_ground + is_flying + is_psychic + is_bug + is_rock + is_ghost + is_dragon + is_dark + is_steel + is_fairy, data=dataset, family=nb(link='log'), method='ML')
 
 # Type coverage
-m9 <- gam(usage ~ evolution + formats + s(hp) + s(atk) + s(def) + s(spa) + s(spd) + s(spe) + typecount + s(stdev) + best_stat + atk_fire + atk_water + atk_grass + atk_electric + atk_ice + atk_fighting + atk_poison + atk_ground + atk_flying + atk_psychic + atk_bug + atk_rock + atk_ghost + atk_dragon + atk_dark + atk_steel + atk_fairy, data=dataset, family=nb(link='log'), method='ML')
+m9 <- gam(usage ~ evolution + formats + s(hp) + s(atk) + s(def) + s(spa) + s(spd) + s(spe) + typecount + s(stdev) + best_stat + weaknesses + resistances + num_super_effective + atk_fire + atk_water + atk_grass + atk_electric + atk_ice + atk_fighting + atk_poison + atk_ground + atk_flying + atk_psychic + atk_bug + atk_rock + atk_ghost + atk_dragon + atk_dark + atk_steel + atk_fairy, data=dataset, family=nb(link='log'), method='ML')
 
 # Type defence
-m10 <- gam(usage ~ evolution + formats + s(hp) + s(atk) + s(def) + s(spa) + s(spd) + s(spe) + typecount + s(stdev) + best_stat + def_fire + def_water + def_grass + def_electric + def_ice + def_fighting + def_poison + def_ground + def_flying + def_psychic + def_bug + def_rock + def_ghost + def_dragon + def_dark + def_steel + def_fairy, family=nb(link='log'), method='ML', data=dataset |>
+m10 <- gam(usage ~ evolution + formats + s(hp) + s(atk) + s(def) + s(spa) + s(spd) + s(spe) + typecount + s(stdev) + best_stat + weaknesses + resistances + num_super_effective + def_fire + def_water + def_grass + def_electric + def_ice + def_fighting + def_poison + def_ground + def_flying + def_psychic + def_bug + def_rock + def_ghost + def_dragon + def_dark + def_steel + def_fairy, family=nb(link='log'), method='ML', data=dataset |>
            mutate(def_normal = def_normal == 0.5 | def_normal == 0.25 | def_normal == 0,
                   def_fire = def_fire == 0.5 | def_fire == 0.25 | def_fire == 0,
                   def_water = def_water == 0.5 | def_water == 0.25 | def_water == 0,
@@ -1375,7 +1384,7 @@ plot_model_coefficient_types(m8, m9, m10, coef_names=coef_names, model_names=mod
 
 ### Moves
 
-A set of move-based features were added to the type-presence GAM model, with coefficients for the new features displayed in Table 8. Non-damaging and priority moves significantly contribute to greater Pokemon usage ($p < 0.05$); this seems reasonable because priority moves allow slow Pokemon to overcome their low speed, and more non-damaging moves may imply a Pokemon is versatile, with more play-styles. On the other hand, the presence of inaccurate, stat-changing, and multiturn setup moves negatively impact usage. Inaccuracy commonly balances powerful moves -- out of 115 moves with power $\geq 100$, 54 of them have accuracies $< 100%$ -- so it seems that powerful, unreliable attackers are less popular. Moves affecting base statistics are similarly risky because they sacrifice a turn for a future advantage contingent on the attacker not switching out (which removes the base statistic change). On the other hand, multiturn setup moves have effects persisting across turns, making their benefits much less risky in theory, so it is interesting to see that Pokemon using these moves are still unpopular. Furthermore, moves with heals, status effects, hazards, and protections, which are commonly seen in battles, all see non-significant impacts on usage. 
+A set of move-based features were added to the type-presence GAM model, with coefficients for the new features displayed in Table 8. Non-damaging and priority moves significantly contribute to greater Pokemon usage. This is reasonable as priority moves allow slow Pokemon to overcome low speeds, and more non-damaging moves imply a Pokemon has more possible play-styles other than offense/defence. On the other hand, the presence of inaccurate, stat-changing, and multiturn setup moves negatively impact usage. Inaccuracy is often added to balance powerful moves -- out of 115 moves with power $\geq 100$, 54 of them non-perfect accuracies -- so it seems that trading reliability for power is unpopular. Moves affecting base statistics are similarly risky as they sacrifice a turn for a future advantage that is contingent on the attacker not switching out (which removes the base statistic change); however, multiturn setup moves have effects persisting across turns, making them less risky in theory, so it is interesting to see that Pokemon with these moves are more unpopular.
 
 ```{r Count number of inaccurate powerful moves. Requires all initial code., eval=FALSE, include=FALSE}
 MOVES |>
@@ -1410,7 +1419,7 @@ data.frame(
   knitr::kable(row.names=FALSE, col.names=c('Move Feature', 'Coefficient', 'p-value'), digits=5)
 ```
 
-\vspace{-4mm}
+\vspace{-6mm}
 
 ### Decision Trees
 
@@ -1528,11 +1537,11 @@ var_importance(f1, 'Feature Importance, Random Forest Model') | var_importance(f
 
 \vspace{-4mm}
 
-**Figure 11**. Feature importance plots showing the 20 most significant features of a random forest (left) and XGBoost (right) model trained on the same feature set as Table 8, after adjusting for evolution status and tier.
+**Figure 11**. Feature importance plots showing the top 20 significant features of a random forest (left) and XGBoost (right) model trained on the same features as Table 8, after adjusting for evolution status and tier.
 
 \vspace{2mm}
 
-The random forest model has logged RMSEs of 0.49/1.15 on the training/testing data, while the XGBoost model has 0.41/1.26. This clear sign of overfitting is corroborated by a closer analysis of the residuals in Figure 12 revealing considerable outliers in the testing set, which may bias the feature importance plots towards continuous variables where there are more possible splits and thus ways to overfit, such as the base statistics. All models, even the final GAM model, still show diagonal line cluster artifacts, indicating there is still much unexplained variance in the data.
+The random forest model has logged RMSEs of 0.49/1.15 on the training/testing data, while the XGBoost model has 0.41/1.26, a clear sign of overfitting that is corroborated by a closer analysis of the residuals in Figure 12 revealing considerable outliers in the testing set. Overfitting most likely occurred in continuous variables such as the base statistics, where there are more possible splits and thus more ways to overfit; consequently, this would amplify their importance values in the feature importance plots.
 
 ```{r echo=FALSE, fig.height=5, fig.width=10}
 identity <- vector(mode='character', length=nrow(dataset))
@@ -1567,7 +1576,7 @@ plot_model_predictions_tree = function(m, title='') {
 
 \vspace{2mm}
 
-Comparing the two model types, the decision trees find all base statistics important while the GAM only finds significance for a subset, a possible result of overfitting. The GAM also finds significance in move types and typings that the decision trees seem to consider unimportant. All models find importance in the standard deviation of stats, as well as the proportion of non-damaging moves. Since many of the same conclusions are made by the decision models, the GAM model appears to be the more robust choice.
+All models, even the final GAM model, still show diagonal line cluster artifacts in Figure 12, indicating there remains much unexplained variance in the data. Comparing the decision trees to the GAM, the trees find all base statistics important while the GAM only finds significance for a subset, possibly due to overfitting. The GAM also finds significance in move types and typings that the decision trees seem to consider unimportant. All models find importance in the standard deviation of base statistics, as well as the proportion of non-damaging moves.
 
 \vspace{2mm}
 
@@ -1610,17 +1619,17 @@ After adjusting for competitive tier and evolution status, this analysis finds r
 
 \vspace{-2mm}
 
-- In order of decreasing importance, base statistics, the presence of types, and the presence of moves all have  statistically significant effects on a Pokemon's usage across many different models.
+- In order of decreasing importance, base statistics, the presence of types, and the presence of moves all have  statistically significant effects on a Pokemon's usage. This holds even across different assumptions of data distributions as well as model architectures.
 
-- Usage increases by roughly 67%/20% per 10-point increase in total/standard deviation of base statistics respectively, when not controlling for specific base statistics.
+- Usage increases by a factor of $\approx 1.67/1.20$ per 10-point increase in the total/standard deviation of base statistics respectively, when not controlling for specific base statistics.
 
-- Usage correlates positively with special attack and special defence, but results are inconclusive for other base statistics. Similarly, Table 9 and Figure 7 agree that speed-based Pokemon have high rates of usage, but have conflicting results for other type specializations.
+- Usage correlates positively with special attack and special defence, but results are inconclusive for other base statistics. Table 9 and Figure 7 agree that speed-based Pokemon have high usage rates, but disagree on the other type specializations.
 
 - Dual-types are have usage rates 1.2 that of monotypes, and usage rates decrease by a factor of 0.8 per additional weakness, when not controlling for specific types.
 
-- The most popular type is steel, whose presence boosts usage by a factor of 3. Other types with significant positive effects are fairy (x1.9), fire (1.7), dark (1.5), and fighting (1.5). The least popular type is bug, whose presence lowers usage by a significant factor of 0.7.
+- The most popular type is steel, whose presence boosts usage by a factor of 3. Other types with significant positive effects are fairy ($\times 1.9$), fire ($\times 1.7$), dark ($\times 1.5$), and fighting ($\times 1.5$). The least popular type is bug, whose presence lowers usage by a significant factor of 0.7.
 
-- Usage increases by roughly 25% both for Pokemon with priority moves and for a 50% increase in the proportion of non-damaging moves. Usage decreases by a factor of 0.7 for Pokemon with stat-changing moves and multiturn setup moves, as well as by 0.87 for each inaccurate move it has.
+- Usage increases by roughly 25% both for Pokemon with priority moves and per a 50% increase in the proportion of non-damaging moves. Usage decreases by a factor of 0.7 for Pokemon with stat-changing moves and multiturn setup moves, as well as by 0.9 for each inaccurate move it has.
 
 
 \vspace{-2mm}
@@ -1630,9 +1639,10 @@ A large proportion of variance in usage data remains unexplained by these variab
 \vspace{-2mm}
 
 - Compiling a wider range of usage data across more months to obtain stabler numbers
-- Looking into a Pokemon's usage on winning teams in Pokemon matches as opposed to simple usage numbers
-- Factoring in Pokemon abilities that affect base statistics or typing, or include information regarding the Pokemon's entire movepool.
-- Analyzing moves in a way that considers move popularity, team strategy, or individual moves. For instance, some moves are learnable by most Pokemon (e.g. [Protect](https://www.smogon.com/dex/sm/moves/protect/), [Toxic](https://www.smogon.com/dex/sm/moves/toxic/)) and some are indicative of wider team strategies (e.g. [Trick Room](https://www.smogon.com/dex/sm/moves/trick-room/), [Baton Pass](https://www.smogon.com/dex/sm/moves/baton-pass/), [Belly Drum](https://www.smogon.com/dex/sm/moves/belly-drum/)) may be better analyzed individually.
+- Looking at a Pokemon's usage on winning teams (across many Pokemon matches) as opposed to usage numbers
+- Factoring in a limited amount of item or ability information -- solely that which affects base statistic, typing, or some common effects
+- Including information regarding the Pokemon's entire movepool, not just the top 5 moves
+- Analyzing moves in a way that considers move popularity, team strategy, or individual moves. For instance, some moves are learnable by most Pokemon (e.g. [Protect](https://www.smogon.com/dex/sm/moves/protect/), [Toxic](https://www.smogon.com/dex/sm/moves/toxic/)) and some are indicative of wider team strategies (e.g. [Trick Room](https://www.smogon.com/dex/sm/moves/trick-room/), [Baton Pass](https://www.smogon.com/dex/sm/moves/baton-pass/), [Belly Drum](https://www.smogon.com/dex/sm/moves/belly-drum/)) which may be better analyzed individually
 
 
 # Bibliography
