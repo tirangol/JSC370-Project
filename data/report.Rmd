@@ -1141,7 +1141,7 @@ m3$theta
 1 / sqrt(m3$theta)
 ```
 
-The residual plots in Figure 8 reveal that competitive tiers form the basis of model predictions. Pokemon are clustered by tier into diagonal lines, with small amounts of variance from the features of interest, whose effects are weak. The negative binomial's residuals do not appear unusual, suggesting the numerical instability issue was minor. Thus, in the absence of strong evidence for any model, the negative binomial was chosen as the most conventional option to model thisoverdispersed count data.
+The residual plots in Figure 8 reveal that competitive tiers form the basis of model predictions. Pokemon are clustered by tier into diagonal lines, with small amounts of variance from the features of interest, whose effects are weak. The negative binomial's residuals do not appear unusual, suggesting the numerical instability issue was minor. Thus, in the absence of strong evidence for any model, the negative binomial was chosen as the most conventional option to model this overdispersed count data.
 
 \vspace{-5mm}
 
